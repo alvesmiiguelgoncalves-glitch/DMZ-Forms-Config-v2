@@ -26,8 +26,11 @@ public interface FormOptionsAccess {
     /** Outline primary color while a stack form is active (set on the BASE form). Empty or "#" = the stack form's own. */
     String dmzfo$stackOutlinePrimaryColor();
 
-    /** Multiplies the base form's outline thickness while a stack form is active (set on the BASE form). 1.0 = unchanged. */
+    /** Multiplies the STACK form's own outline thickness while it is active (set on the BASE form). 1.0 = unchanged. */
     double dmzfo$stackOutlineThicknessMultiplicator();
+
+    /** "pulse" or "gradient" for the stack form's outline (set on the BASE form). Empty = the stack form's own. */
+    String dmzfo$stackOutlineColorMode();
 
     /** RGB 0..1, or null when empty/invalid (= game default). */
     @Nullable

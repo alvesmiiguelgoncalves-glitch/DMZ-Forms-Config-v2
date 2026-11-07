@@ -30,6 +30,7 @@ public abstract class FormDataMixin implements FormOptionsAccess {
     @Unique private Double stackTintIntensity = -1.0;
     @Unique private String stackOutlinePrimaryColor = "";
     @Unique private Double stackOutlineThicknessMultiplicator = 1.0;
+    @Unique private String stackOutlineColorMode = "";
     @Unique private String scleraColor = "";
     @Unique private Boolean noEyebrows = false;
     @Unique private Boolean eyeliner = false;
@@ -81,6 +82,12 @@ public abstract class FormDataMixin implements FormOptionsAccess {
     @Override
     public double dmzfo$stackOutlineThicknessMultiplicator() {
         return stackOutlineThicknessMultiplicator == null ? 1.0 : Math.max(0.0, stackOutlineThicknessMultiplicator);
+    }
+
+    @Override
+    public String dmzfo$stackOutlineColorMode() {
+        String mode = stackOutlineColorMode == null ? "" : stackOutlineColorMode.trim().toLowerCase(java.util.Locale.ROOT);
+        return mode.equals("pulse") || mode.equals("gradient") ? mode : "";
     }
 
     @Override

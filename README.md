@@ -16,8 +16,9 @@ Precisa do addon no cliente (e no servidor, se jogar em servidor, para a config 
 | `stackTintHairAndTailIntensity` | número / `-1` | Vale na forma **base**. De 0 a 1: intensidade da tinta da forma empilhável **no cabelo, na cauda e nas sobrancelhas**. `-1` = usa a intensidade da própria forma empilhável. |
 | `stackTintColor` | texto / `""` | Vale na forma **base**. Cor da tinta da forma empilhável **na pele** (corpo). `""` ou `"#"` = usa a cor da própria forma empilhável. |
 | `stackTintIntensity` | número / `-1` | Vale na forma **base**. De 0 a 1: intensidade da tinta da forma empilhável **na pele**. `-1` = usa a intensidade da própria forma empilhável; `0` = sem tinta na pele. |
-| `stackOutlinePrimaryColor` | texto / `""` | Vale na forma **base** (que tem `outlineShader` ligado). Cor **primária** do outline enquanto uma forma empilhável está ativa. `""` ou `"#"` = usa a cor primária do outline da própria forma empilhável. |
-| `stackOutlineThicknessMultiplicator` | número / `1.0` | Vale na forma **base**. Multiplica a espessura do outline da base enquanto uma forma empilhável está ativa (`2.0` = o dobro, `1.0` = igual). |
+| `stackOutlinePrimaryColor` | texto / `""` | Vale na forma **base**. Cor **primária** do outline enquanto uma forma empilhável está ativa. `""` ou `"#"` = usa a cor primária do outline da própria forma empilhável. |
+| `stackOutlineThicknessMultiplicator` | número / `1.0` | Vale na forma **base**. Multiplica a espessura do outline **da forma empilhável** (cada nível com a sua). `2.0` = o dobro, `1.0` = igual. |
+| `stackOutlineColorMode` | texto / `""` | Vale na forma **base**. `"pulse"` ou `"gradient"` para o outline da forma empilhável. `""` = usa o modo do próprio outline da empilhável. |
 | `scleraColor` | texto / `""` | Cor da esclera (parte branca do olho), por exemplo `"#FFFFFF"`. Vazio = cor padrão do jogo. |
 | `noEyebrows` | boolean / `false` | Esconde as sobrancelhas: não desenha a camada de sobrancelha e usa a textura `ssj3eyebrows_eye_N` do DMZ (a do SSJ3) por cima, escolhida pelo tipo de olho do jogador. |
 | `eyeliner` | boolean / `false` | Desenha o delineado nos olhos (usa a textura `ssj4_eyes_N` do DMZ, escolhida pelo tipo de olho do jogador). |
@@ -42,7 +43,8 @@ Precisa do addon no cliente (e no servidor, se jogar em servidor, para a config 
   "stackTintColor": "",
   "stackTintIntensity": -1.0,
   "stackOutlinePrimaryColor": "#FF2A2A",
-  "stackOutlineThicknessMultiplicator": 2.0
+  "stackOutlineThicknessMultiplicator": 2.0,
+  "stackOutlineColorMode": "gradient"
 },
 "masteredultrainstinct": {
   "chargeKiAnimation": false,
@@ -89,12 +91,12 @@ As opções novas ficam na forma **base** (ex.: Blue) e dizem como uma forma emp
 
 - **Pele:** `stackTintColor` e `stackTintIntensity`. Com `""` e `-1`, a pele usa a tinta da própria forma empilhável.
 - **Cabelo, cauda e sobrancelhas:** continuam em `stackTintAffectsHairAndTail` e `stackTintHairAndTailIntensity`, sempre com a **cor** da forma empilhável.
-- **Outline:** `stackOutlinePrimaryColor` e `stackOutlineThicknessMultiplicator`. Quando uma das duas está preenchida (cor diferente de vazio, ou multiplicador diferente de `1.0`), o outline mantém o visual do outline da base (espessura, fogo, modo de cor, brilho) e:
+- **Outline:** `stackOutlinePrimaryColor`, `stackOutlineThicknessMultiplicator` e `stackOutlineColorMode`. Quando uma delas está preenchida (cor diferente de vazio, multiplicador diferente de `1.0` ou modo diferente de vazio), o outline é o da própria forma empilhável, com estas trocas:
   - cor **primária** = `stackOutlinePrimaryColor` (vazio ou `"#"` = primária da forma empilhável);
-  - cor **secundária** = a secundária do outline da forma empilhável;
-  - espessura = espessura da base × `stackOutlineThicknessMultiplicator`.
+  - espessura = espessura da forma empilhável × `stackOutlineThicknessMultiplicator` (cada nível do Kaio-ken multiplica o seu valor);
+  - modo de cor = `stackOutlineColorMode` (vazio = o da forma empilhável).
 
-  Precisa que a base **e** a forma empilhável tenham `outlineShader.enabled: true`. Com as duas opções no padrão, vale o comportamento original do DMZ (o outline da empilhável substitui o da base).
+  Cor secundária, fogo e brilho vêm sempre da forma empilhável, que precisa ter `outlineShader.enabled: true`. Com tudo no padrão, vale o comportamento original do DMZ.
 - **Tinta x2 → x20:** cada nível do Kaio-ken é uma forma separada com seu próprio `tintIntensity`. Deixe `stackTintIntensity` e `stackTintHairAndTailIntensity` em `-1` para cada nível usar o seu. Um valor fixo vale para todos os níveis.
 - Removidas as opções da 1.2.0 anterior (`tintColor` vazio, `primaryColor` vazio e `addToBaseOutline`).
 
@@ -104,5 +106,6 @@ Exemplo (na forma base):
 "stackTintIntensity": -1.0,
 "stackTintHairAndTailIntensity": -1.0,
 "stackOutlinePrimaryColor": "#FF2A2A",
-"stackOutlineThicknessMultiplicator": 2.0
+"stackOutlineThicknessMultiplicator": 2.0,
+"stackOutlineColorMode": "gradient"
 ```

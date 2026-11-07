@@ -7,15 +7,16 @@ import net.minecraft.world.entity.Entity;
 import javax.annotation.Nullable;
 
 /**
- * Outline while a stack form (Kaio-ken) is active. By default DMZ lets the stack form's outline replace the base
- * form's outline. The BASE form can change that with {@code stackOutlinePrimaryColor} and
- * {@code stackOutlineThicknessMultiplicator}; when at least one is set (and both forms have an enabled outline), the
- * outline keeps the base form's look (thickness, fire, color mode, glow) and:
+ * Outline while a stack form (Kaio-ken) is active. DMZ already lets the stack form's outline replace the base
+ * form's outline. The BASE form can tweak the stack form's outline with {@code stackOutlinePrimaryColor},
+ * {@code stackOutlineThicknessMultiplicator} and {@code stackOutlineColorMode}. When at least one is set the outline
+ * is the stack form's own, except:
  * <ul>
- *   <li>primary color = {@code stackOutlinePrimaryColor}, or the stack form's own primary color when empty / "#";</li>
- *   <li>secondary color = the stack form's own secondary color;</li>
- *   <li>thickness = the base form's thickness x {@code stackOutlineThicknessMultiplicator}.</li>
+ *   <li>primary color = {@code stackOutlinePrimaryColor} (empty or "#" = the stack form's own);</li>
+ *   <li>thickness = the stack form's own thickness x {@code stackOutlineThicknessMultiplicator};</li>
+ *   <li>color mode = {@code stackOutlineColorMode} (empty = the stack form's own).</li>
  * </ul>
+ * Secondary color, fire intensity and body glow always come from the stack form.
  */
 public final class OutlineMerge {
 
@@ -39,17 +40,19 @@ public final class OutlineMerge {
             FormOptionsAccess options = FormOptions.of(baseForm);
             if (options == null) return own;
 
-            FormConfig.FormData.OutlineShaderConfig base = baseForm.getOutlineShader();
-            if (!base.isEnabled()) return own;
-
             String customPrimary = options.dmzfo$stackOutlinePrimaryColor();
             double multiplier = options.dmzfo$stackOutlineThicknessMultiplicator();
-            if (customPrimary.isEmpty() && multiplier == 1.0) return own; // nothing asked: DMZ's own behavior
+            String customMode = options.dmzfo$stackOutlineColorMode();
+            if (customPrimary.isEmpty() && multiplier == 1.0 && customMode.isEmpty()) return own; // nothing asked: DMZ's own behavior
 
-            String primary = customPrimary.isEmpty() ? own.getPrimaryColor() : customPrimary;
             FormConfig.FormData.OutlineShaderConfig out = new FormConfig.FormData.OutlineShaderConfig();
-            ((OutlineAccess) (Object) out).dmzfo$fill(primary, own.getSecondaryColor(),
-                    base.getOutlineThickness() * multiplier, base.getFireIntensity(), base.getColorMode(), base.getBodyGlow());
+            ((OutlineAccess) (Object) out).dmzfo$fill(
+                    customPrimary.isEmpty() ? own.getPrimaryColor() : customPrimary,
+                    own.getSecondaryColor(),
+                    own.getOutlineThickness() * multiplier,
+                    own.getFireIntensity(),
+                    customMode.isEmpty() ? own.getColorMode() : customMode,
+                    own.getBodyGlow());
             return out;
         } catch (RuntimeException | LinkageError e) {
             return own;
