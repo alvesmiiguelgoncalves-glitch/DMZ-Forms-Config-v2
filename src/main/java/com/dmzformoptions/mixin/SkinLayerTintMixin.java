@@ -22,9 +22,10 @@ public abstract class SkinLayerTintMixin {
                     target = "Lcom/dragonminez/client/render/layer/DMZSkinLayer;resolveTintForm(Lcom/dragonminez/common/stats/StatsData;)Lcom/dragonminez/common/config/FormConfig$FormData;"))
     private FormConfig.FormData dmzfo$bodyTint(StatsData stats) {
         FormConfig.FormData original = DMZSkinLayer.resolveTintForm(stats);
-        FormOptions.bodyTint = original;
+        FormConfig.FormData body = FormOptions.bodyTintForm(stats, original);
+        FormOptions.bodyTint = body;
         FormOptions.hairTailTint = FormOptions.hairTailTint(stats, original);
         FormOptions.tintContextValid = true;
-        return original;
+        return body;
     }
 }

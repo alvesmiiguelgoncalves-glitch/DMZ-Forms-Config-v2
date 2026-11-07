@@ -7,11 +7,14 @@ import net.minecraft.world.entity.Entity;
 import javax.annotation.Nullable;
 
 /**
- * Stack-form outline rules:
+ * Outline while a stack form (Kaio-ken) is active. By default DMZ lets the stack form's outline replace the base
+ * form's outline. The BASE form can change that with {@code stackOutlinePrimaryColor} and
+ * {@code stackOutlineThicknessMultiplicator}; when at least one is set (and both forms have an enabled outline), the
+ * outline keeps the base form's look (thickness, fire, color mode, glow) and:
  * <ul>
- *   <li>empty {@code primaryColor} = the stack's {@code auraColor}; empty {@code secondaryColor} = the primary color;</li>
- *   <li>{@code addToBaseOutline: true} = start from the base form's outline (if it has one) and multiply its
- *       thickness by the stack's {@code outlineThickness} (2.0 = twice as thick, 1.0 = unchanged).</li>
+ *   <li>primary color = {@code stackOutlinePrimaryColor}, or the stack form's own primary color when empty / "#";</li>
+ *   <li>secondary color = the stack form's own secondary color;</li>
+ *   <li>thickness = the base form's thickness x {@code stackOutlineThicknessMultiplicator}.</li>
  * </ul>
  */
 public final class OutlineMerge {
@@ -30,36 +33,23 @@ public final class OutlineMerge {
         FormConfig.FormData.OutlineShaderConfig own = stack.getOutlineShader();
         try {
             if (!own.isEnabled()) return own;
-            OutlineAccess raw = (OutlineAccess) (Object) own;
 
-            String primary = raw.dmzfo$rawPrimary();
-            String secondary = raw.dmzfo$rawSecondary();
-            String aura = stack instanceof FormOptionsAccess access ? access.dmzfo$auraColor() : "";
-            boolean blankPrimary = primary.isEmpty() || primary.equals("#");
-            boolean blankSecondary = secondary.isEmpty() || secondary.equals("#");
-            if (blankPrimary && !aura.isEmpty()) primary = aura;
-            if (blankSecondary) secondary = (blankPrimary && aura.isEmpty()) ? "" : primary;
+            Character character = FormOptions.characterOf(current);
+            FormConfig.FormData baseForm = character != null && character.hasActiveForm() ? character.getActiveFormData() : null;
+            FormOptionsAccess options = FormOptions.of(baseForm);
+            if (options == null) return own;
 
-            FormConfig.FormData.OutlineShaderConfig base = null;
-            if (raw.dmzfo$addToBase()) {
-                Character character = FormOptions.characterOf(current);
-                FormConfig.FormData form = character != null && character.hasActiveForm() ? character.getActiveFormData() : null;
-                if (form != null && form.getOutlineShader().isEnabled()) base = form.getOutlineShader();
-            }
-            if (base == null && !(blankPrimary && !aura.isEmpty()) && !blankSecondary) return own;
+            FormConfig.FormData.OutlineShaderConfig base = baseForm.getOutlineShader();
+            if (!base.isEnabled()) return own;
 
-            double thickness = own.getOutlineThickness();
-            double fire = own.getFireIntensity();
-            double glow = own.getBodyGlow();
-            String mode = own.getColorMode();
-            if (base != null) {
-                thickness = base.getOutlineThickness() * own.getOutlineThickness();
-                fire = Math.max(base.getFireIntensity(), fire);
-                glow = Math.max(base.getBodyGlow(), glow);
-                mode = base.getColorMode();
-            }
+            String customPrimary = options.dmzfo$stackOutlinePrimaryColor();
+            double multiplier = options.dmzfo$stackOutlineThicknessMultiplicator();
+            if (customPrimary.isEmpty() && multiplier == 1.0) return own; // nothing asked: DMZ's own behavior
+
+            String primary = customPrimary.isEmpty() ? own.getPrimaryColor() : customPrimary;
             FormConfig.FormData.OutlineShaderConfig out = new FormConfig.FormData.OutlineShaderConfig();
-            ((OutlineAccess) (Object) out).dmzfo$fill(primary, secondary, thickness, fire, mode, glow);
+            ((OutlineAccess) (Object) out).dmzfo$fill(primary, own.getSecondaryColor(),
+                    base.getOutlineThickness() * multiplier, base.getFireIntensity(), base.getColorMode(), base.getBodyGlow());
             return out;
         } catch (RuntimeException | LinkageError e) {
             return own;

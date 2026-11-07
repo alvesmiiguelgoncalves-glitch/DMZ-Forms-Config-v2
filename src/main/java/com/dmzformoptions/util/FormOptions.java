@@ -92,7 +92,7 @@ public final class FormOptions {
      * The tint form DMZ should use for hair and tail. DMZ's own choice is a stack form (Kaio-ken)
      * when one is active, otherwise the base form. When a stack form is active, the BASE form can say:
      * {@code stackTintAffectsHairAndTail: false} (no tint on hair/tail) or
-     * {@code stackTintHairAndTailIntensity: 0.1} (weaker tint on hair/tail).
+     * {@code stackTintHairAndTailIntensity: 0.1} (weaker tint on hair/tail). The color is always the stack form's own.
      */
     @Nullable
     public static FormConfig.FormData hairTailTint(StatsData stats, @Nullable FormConfig.FormData original) {
@@ -112,8 +112,38 @@ public final class FormOptions {
 
             FormOptionsAccess stack = of(original);
             if (stack == null) return original;
-            FormConfig.FormData copy = stack.dmzfo$tintCopy(Math.min(1.0, intensity));
+            FormConfig.FormData copy = stack.dmzfo$tintVariant(null, Math.min(1.0, intensity));
             return copy != null ? copy : original;
+        } catch (RuntimeException e) {
+            return original;
+        }
+    }
+
+    /**
+     * The tint form DMZ should use for the SKIN (and everything else that is not hair/tail/eyebrows) while a stack
+     * form is active. The BASE form can say {@code stackTintColor} and/or {@code stackTintIntensity}; with both
+     * unset ({@code ""} and {@code -1}) DMZ keeps the stack form's own tint.
+     */
+    @Nullable
+    public static FormConfig.FormData bodyTintForm(@Nullable StatsData stats, @Nullable FormConfig.FormData original) {
+        try {
+            if (stats == null) return original;
+            Character character = stats.getCharacter();
+            if (character == null || !character.hasActiveStackForm() || !character.hasActiveForm()) return original;
+
+            FormOptionsAccess stack = of(character.getActiveStackFormData());
+            FormOptionsAccess base = of(character.getActiveFormData());
+            if (stack == null || base == null) return original;
+
+            String color = base.dmzfo$stackTintColor();
+            double intensity = base.dmzfo$stackTintIntensity();
+            boolean hasColor = !color.isEmpty();
+            boolean hasIntensity = intensity >= 0.0;
+            if (!hasColor && !hasIntensity) return original;
+            if (hasIntensity && intensity == 0.0) return null;
+
+            FormConfig.FormData variant = stack.dmzfo$tintVariant(hasColor ? color : null, hasIntensity ? Math.min(1.0, intensity) : -1.0);
+            return variant != null && variant.hasTint() ? variant : original;
         } catch (RuntimeException e) {
             return original;
         }

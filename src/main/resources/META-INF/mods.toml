@@ -8,7 +8,7 @@ version="1.2.0"
 displayName="DMZ Form Options"
 credits="Base: DragonMine Z."
 authors="Seu Nome Aqui"
-description='''Adds new options to the DragonMine Z transformation JSON files: forced tied/loose tail, Kaio-ken tint on hair and tail, sclera color, no eyebrows, eyeliner and ki-charge animation.'''
+description='''Adds new options to the DragonMine Z transformation JSON files: forced tied/loose tail, stack-form (Kaio-ken) tint and outline control, sclera color, no eyebrows, eyeliner and ki-charge animation.'''
 displayTest="IGNORE_SERVER_VERSION"
 
 [[mixins]]

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Applies {@link OutlineMerge} to the stack form's outline (the stack wins over the base form in DMZ). */
+/** Applies {@link OutlineMerge} to the stack form's outline (see stackOutline* options on the base form). */
 @Mixin(value = TransformationPostShaderManager.class, remap = false)
 public abstract class ShaderOutlineMixin {
 

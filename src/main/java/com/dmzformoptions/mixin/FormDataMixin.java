@@ -7,13 +7,11 @@ import com.dragonminez.common.config.FormConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Adds the new options as real fields of {@code FormConfig.FormData}. DMZ reads and writes its form
@@ -28,42 +26,22 @@ public abstract class FormDataMixin implements FormOptionsAccess {
     @Unique private Boolean forceLooseTail = false;
     @Unique private Boolean stackTintAffectsHairAndTail = true;
     @Unique private Double stackTintHairAndTailIntensity = -1.0;
+    @Unique private String stackTintColor = "";
+    @Unique private Double stackTintIntensity = -1.0;
+    @Unique private String stackOutlinePrimaryColor = "";
+    @Unique private Double stackOutlineThicknessMultiplicator = 1.0;
     @Unique private String scleraColor = "";
     @Unique private Boolean noEyebrows = false;
     @Unique private Boolean eyeliner = false;
     @Unique private String eyelinerColor = "#000000";
     @Unique private Boolean chargeKiAnimation = true;
 
-    // ---- DMZ fields we read ----
-    @Shadow private String tintColor;
-    @Shadow private String auraColor;
-    @Unique private transient float[] dmzfo$auraTintCache;
-    @Unique private transient String dmzfo$auraTintKey;
-
     // ---- caches (transient: never written to JSON) ----
     @Unique private transient float[] dmzfo$scleraRgbCache;
     @Unique private transient String dmzfo$scleraRgbKey;
     @Unique private transient float[] dmzfo$eyelinerRgbCache;
     @Unique private transient String dmzfo$eyelinerRgbKey;
-    @Unique private transient FormConfig.FormData dmzfo$tintCopyCache;
-    @Unique private transient double dmzfo$tintCopyIntensity = Double.NaN;
-
-    /** Empty {@code tintColor}: use the form's own aura color as the tint color. */
-    @Inject(method = "getRgbTintColor", at = @At("HEAD"), cancellable = true, remap = false)
-    private void dmzfo$tintFromAura(CallbackInfoReturnable<float[]> cir) {
-        if (tintColor != null && !tintColor.isEmpty()) return;
-        if (auraColor == null || auraColor.isEmpty()) return;
-        if (!auraColor.equals(dmzfo$auraTintKey)) {
-            dmzfo$auraTintCache = dmzfo$parse(auraColor);
-            dmzfo$auraTintKey = auraColor;
-        }
-        if (dmzfo$auraTintCache != null) cir.setReturnValue(dmzfo$auraTintCache);
-    }
-
-    @Override
-    public String dmzfo$auraColor() {
-        return auraColor == null ? "" : auraColor;
-    }
+    @Unique private transient Map<String, FormConfig.FormData> dmzfo$tintVariants;
 
     @Override
     public boolean dmzfo$forceTiedTail() {
@@ -83,6 +61,26 @@ public abstract class FormDataMixin implements FormOptionsAccess {
     @Override
     public double dmzfo$stackTintHairAndTailIntensity() {
         return stackTintHairAndTailIntensity == null ? -1.0 : stackTintHairAndTailIntensity;
+    }
+
+    @Override
+    public String dmzfo$stackTintColor() {
+        return dmzfo$colorOrEmpty(stackTintColor);
+    }
+
+    @Override
+    public double dmzfo$stackTintIntensity() {
+        return stackTintIntensity == null ? -1.0 : stackTintIntensity;
+    }
+
+    @Override
+    public String dmzfo$stackOutlinePrimaryColor() {
+        return dmzfo$colorOrEmpty(stackOutlinePrimaryColor);
+    }
+
+    @Override
+    public double dmzfo$stackOutlineThicknessMultiplicator() {
+        return stackOutlineThicknessMultiplicator == null ? 1.0 : Math.max(0.0, stackOutlineThicknessMultiplicator);
     }
 
     @Override
@@ -124,19 +122,32 @@ public abstract class FormDataMixin implements FormOptionsAccess {
 
     @Override
     @Nullable
-    public FormConfig.FormData dmzfo$tintCopy(double intensity) {
-        if (dmzfo$tintCopyCache != null && dmzfo$tintCopyIntensity == intensity) return dmzfo$tintCopyCache;
+    public FormConfig.FormData dmzfo$tintVariant(@Nullable String color, double intensity) {
+        String colorKey = dmzfo$colorOrEmpty(color);
+        String key = colorKey + "|" + intensity;
+        if (dmzfo$tintVariants == null) dmzfo$tintVariants = new HashMap<>();
+        FormConfig.FormData cached = dmzfo$tintVariants.get(key);
+        if (cached != null) return cached;
         try {
             Gson gson = new Gson();
             JsonObject tree = gson.toJsonTree((FormConfig.FormData) (Object) this).getAsJsonObject();
-            tree.addProperty("tintIntensity", intensity);
-            dmzfo$tintCopyCache = gson.fromJson(tree, FormConfig.FormData.class);
-            dmzfo$tintCopyIntensity = intensity;
+            if (!colorKey.isEmpty()) tree.addProperty("tintColor", colorKey);
+            if (intensity >= 0.0) tree.addProperty("tintIntensity", intensity);
+            FormConfig.FormData copy = gson.fromJson(tree, FormConfig.FormData.class);
+            dmzfo$tintVariants.put(key, copy);
+            return copy;
         } catch (RuntimeException e) {
-            DmzFormOptions.LOGGER.warn("[dmz_form_options] could not copy form data for the hair/tail tint; using the stack form's own tint.", e);
-            dmzfo$tintCopyCache = null;
+            DmzFormOptions.LOGGER.warn("[dmz_form_options] could not copy form data for the stack tint; using the stack form's own tint.", e);
+            return null;
         }
-        return dmzfo$tintCopyCache;
+    }
+
+    /** Blank or a lone "#" means "not set". */
+    @Unique
+    private static String dmzfo$colorOrEmpty(@Nullable String value) {
+        if (value == null) return "";
+        String trimmed = value.trim();
+        return trimmed.equals("#") ? "" : trimmed;
     }
 
     @Unique
