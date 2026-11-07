@@ -34,4 +34,6 @@ public interface FormOptionsAccess {
     /** A copy of this form whose tintIntensity is replaced (cached), or null if the copy failed. */
     @Nullable
     FormConfig.FormData dmzfo$tintCopy(double intensity);
+
+    String dmzfo$auraColor();
 }

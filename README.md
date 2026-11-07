@@ -74,3 +74,18 @@ mecha, que o DMZ não tinge. Se a linha não aparece, a opção não foi lida (c
 ## v1.1.3
 
 - Corrigido: os mixins do cabelo e das partes da raça não eram aplicados (o método era `static` e o do DMZ não é). Por isso a tinta nunca chegava no cabelo.
+
+## v1.2.0 — Kaioken / stack forms
+
+- **`tintColor` vazio** (`""`): a tinta usa a cor da aura (`auraColor`) da própria forma. Só vale se `tintIntensity` for maior que 0.
+- **`outlineShader.primaryColor` vazio** (`""` ou `"#"`): usa o `auraColor` da stack. `secondaryColor` vazio usa a mesma cor do primário.
+- **`outlineShader.addToBaseOutline`** (boolean, `false`): com `true`, o outline da stack parte do outline da forma base (se ela tiver um) e **multiplica a espessura** dele pelo `outlineThickness` da stack (`2.0` = o dobro, `1.0` = igual). Sem isso, o outline da stack substitui o da base (comportamento original do DMZ). O `outlineShader` da stack precisa ter `"enabled": true`.
+- **Tinta do Kaioken x2 → x20**: cada nível é uma forma separada com seu próprio `tintIntensity`. Deixe `stackTintHairAndTailIntensity` em `-1.0` (padrão) para o cabelo e a cauda seguirem o `tintIntensity` de cada nível. Um valor fixo (ex.: `0.1`) vale para todos os níveis e esconde a diferença.
+
+Exemplo (x20):
+```json
+"tintColor": "",
+"tintIntensity": 0.5,
+"stackTintHairAndTailIntensity": -1.0,
+"outlineShader": { "enabled": true, "primaryColor": "", "secondaryColor": "", "outlineThickness": 2.0, "addToBaseOutline": true }
+```
