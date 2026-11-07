@@ -16,7 +16,8 @@
     "SkinLayerBrowTintMixin",
     "SkinLayerEyesMixin",
     "SkinLayerTailMixin",
-    "SkinLayerTintMixin"
+    "SkinLayerTintMixin",
+    "StrandColorMixin"
   ],
   "server": [],
   "injectors": {

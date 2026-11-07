@@ -66,3 +66,7 @@ opções daqui. Com `noEyebrows` o addon nem desenha a camada de sobrancelha (qu
 Ao carregar o jogo, procure no `logs/latest.log` a linha `hair/tail tint override is active`. Se ela aparece, o addon
 está trocando a tinta do cabelo; se o cabelo continua igual, o estilo de cabelo provavelmente tem cores próprias por
 mecha, que o DMZ não tinge. Se a linha não aparece, a opção não foi lida (confira a forma base e `/dmzreload config`).
+
+## v1.1.2
+
+- O cabelo agora recebe a tinta também quando o estilo tem **cor própria por mecha** (o DMZ ignora a tinta global nesse caso). Mechas que herdam a cor global não são tintadas duas vezes.

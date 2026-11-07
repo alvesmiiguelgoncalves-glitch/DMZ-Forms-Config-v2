@@ -155,6 +155,32 @@ public final class FormOptions {
         return out;
     }
 
+    // ------------------------------------------------------------------ per-strand hair colors
+
+    /** Tint form chosen by the last hair resolve (client render thread); null = no strand tint. */
+    private static FormConfig.FormData strandTint;
+
+    public static void setStrandTint(@Nullable FormConfig.FormData form) {
+        strandTint = form;
+    }
+
+    /** Tints a packed 0xRRGGBB color taken from a strand that has its own color. */
+    public static int tintStrandColor(int rgb) {
+        FormConfig.FormData form = strandTint;
+        if (form == null || rgb < 0) return rgb;
+        float[] color = form.getRgbTintColor();
+        float intensity = (float) form.getTintIntensity();
+        if (color == null || intensity <= 0.0f) return rgb;
+        float[] c = {((rgb >> 16) & 0xFF) / 255.0f, ((rgb >> 8) & 0xFF) / 255.0f, (rgb & 0xFF) / 255.0f};
+        float scaled = Math.min(1.0f, intensity) * AuraTintTracker.darkTintScale(c);
+        int out = 0;
+        for (int i = 0; i < 3; i++) {
+            float v = Math.max(0.0f, Math.min(1.0f, c[i] * (1.0f - scaled) + color[i] * scaled));
+            out = (out << 8) | Math.round(v * 255.0f);
+        }
+        return out;
+    }
+
     // ------------------------------------------------------------------ ki charge animation
 
     public static boolean suppressKiChargeAnimation(@Nullable Entity entity) {

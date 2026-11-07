@@ -16,6 +16,8 @@ public abstract class HairTintMixin {
             at = @At(value = "INVOKE", remap = false,
                     target = "Lcom/dragonminez/client/render/layer/DMZSkinLayer;resolveTintForm(Lcom/dragonminez/common/stats/StatsData;)Lcom/dragonminez/common/config/FormConfig$FormData;"))
     private static FormConfig.FormData dmzfo$hairTint(StatsData stats) {
-        return FormOptions.resolveHairTailTint(stats);
+        FormConfig.FormData result = FormOptions.resolveHairTailTint(stats);
+        FormOptions.setStrandTint(result);
+        return result;
     }
 }
