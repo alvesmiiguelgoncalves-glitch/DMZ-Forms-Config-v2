@@ -70,3 +70,7 @@ mecha, que o DMZ não tinge. Se a linha não aparece, a opção não foi lida (c
 ## v1.1.2
 
 - O cabelo agora recebe a tinta também quando o estilo tem **cor própria por mecha** (o DMZ ignora a tinta global nesse caso). Mechas que herdam a cor global não são tintadas duas vezes.
+
+## v1.1.3
+
+- Corrigido: os mixins do cabelo e das partes da raça não eram aplicados (o método era `static` e o do DMZ não é). Por isso a tinta nunca chegava no cabelo.

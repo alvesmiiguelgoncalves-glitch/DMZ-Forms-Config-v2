@@ -15,7 +15,7 @@ public abstract class PartsLayerTintMixin {
     @Redirect(method = {"renderRacePartsForAnchor", "renderOriginBones"}, remap = false,
             at = @At(value = "INVOKE", remap = false,
                     target = "Lcom/dragonminez/client/render/layer/DMZSkinLayer;resolveTintForm(Lcom/dragonminez/common/stats/StatsData;)Lcom/dragonminez/common/config/FormConfig$FormData;"))
-    private static FormConfig.FormData dmzfo$partsTint(StatsData stats) {
+    private FormConfig.FormData dmzfo$partsTint(StatsData stats) {
         return FormOptions.resolveHairTailTint(stats);
     }
 }
